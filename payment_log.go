@@ -2,6 +2,7 @@ package paymentlog
 
 import (
 	"errors"
+	"sort"
 	"time"
 )
 
@@ -26,6 +27,7 @@ var (
 	MissingAccountID   = errors.New("Missing payment log account ID.")
 
 	AlreadyExists = errors.New("Payment log already exists.")
+	LogNotFound   = errors.New("Payment log not found.")
 )
 
 type PaymentLog struct {
@@ -77,7 +79,7 @@ func (p PaymentLog) Validate() error {
 }
 
 type PaymentLogChange struct {
-	Amount      *int
+	Amount      *uint
 	Description *string
 	Source      *string
 	SourceID    *string
@@ -108,4 +110,24 @@ type LogStore interface {
 	StoreFailureLog(failure FailureLog) error
 	ListFailureLogs(num, offset int) ([]FailureLog, error)
 	ListFailureLogsSince(timestamp time.Time) ([]FailureLog, error)
+}
+
+type createdSortedLogs []PaymentLog
+
+func (c createdSortedLogs) Len() int {
+	return len(c)
+}
+
+func (c createdSortedLogs) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c createdSortedLogs) Less(i, j int) bool {
+	return c[i].Created.After(c[j].Created)
+}
+
+func SortLogsByCreated(logs []PaymentLog) []PaymentLog {
+	slogs := createdSortedLogs(logs)
+	sort.Sort(slogs)
+	return []PaymentLog(slogs)
 }
