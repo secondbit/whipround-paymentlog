@@ -31,7 +31,13 @@ var (
     MissingAccountID   = errors.New("Missing payment log account ID.")
 
     AlreadyExists = errors.New("Payment log already exists.")
+    LogNotFound   = errors.New("Payment log not found.")
 )
+```
+
+## func SortLogsByCreated
+``` go
+func SortLogsByCreated(logs []PaymentLog) []PaymentLog
 ```
 
 
@@ -104,9 +110,33 @@ func NewMemoryStore() *MemoryStore
 
 
 
+### func (\*MemoryStore) DeletePaymentLog
+``` go
+func (store *MemoryStore) DeletePaymentLog(id string) error
+```
+
+
+### func (\*MemoryStore) GetPaymentLog
+``` go
+func (store *MemoryStore) GetPaymentLog(id string) (PaymentLog, error)
+```
+
+
+### func (\*MemoryStore) ListPaymentLogsByCampaign
+``` go
+func (store *MemoryStore) ListPaymentLogsByCampaign(id string, num, offset int) ([]PaymentLog, error)
+```
+
+
 ### func (\*MemoryStore) StorePaymentLog
 ``` go
 func (store *MemoryStore) StorePaymentLog(log PaymentLog) error
+```
+
+
+### func (\*MemoryStore) UpdatePaymentLog
+``` go
+func (store *MemoryStore) UpdatePaymentLog(id string, change PaymentLogChange) error
 ```
 
 
@@ -148,7 +178,7 @@ func (p PaymentLog) Validate() error
 ## type PaymentLogChange
 ``` go
 type PaymentLogChange struct {
-    Amount      *int
+    Amount      *uint
     Description *string
     Source      *string
     SourceID    *string
