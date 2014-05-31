@@ -93,5 +93,4 @@ func (store *MemoryStore) ListPaymentLogsByCampaign(id string, num, offset int) 
 		}
 	}
 	return SortLogsByCreated(results), nil
-	//return results, nil
 }
