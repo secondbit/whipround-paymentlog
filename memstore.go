@@ -92,5 +92,6 @@ func (store *MemoryStore) ListPaymentLogsByCampaign(id string, num, offset int) 
 			results = append(results, *log)
 		}
 	}
-	return SortLogsByCreated(results), nil
+	//return SortLogsByCreated(results), nil
+	return results, nil
 }
