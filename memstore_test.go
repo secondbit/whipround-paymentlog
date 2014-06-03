@@ -33,11 +33,8 @@ func comparePaymentLogs(expectation, result PaymentLog) (success bool, field str
 	if expectation.Currency != result.Currency {
 		return false, "currency", expectation.Currency, result.Currency
 	}
-	if expectation.CampaignID != result.CampaignID {
-		return false, "campaign ID", expectation.CampaignID, result.CampaignID
-	}
-	if expectation.GoalID != result.GoalID {
-		return false, "goal ID", expectation.GoalID, result.GoalID
+	if expectation.ProjectID != result.ProjectID {
+		return false, "project ID", expectation.ProjectID, result.ProjectID
 	}
 	if expectation.UserID != result.UserID {
 		return false, "user ID", expectation.UserID, result.UserID
@@ -61,8 +58,7 @@ func TestStoringPaymentLogInMemory(t *testing.T) {
 		Created:     time.Now(),
 		Status:      StatusPending,
 		Currency:    CurrencyUSD,
-		CampaignID:  "campaign-id",
-		GoalID:      "goal-id",
+		ProjectID:   "project-id",
 		UserID:      "user-id",
 		AccountID:   "account-id",
 		AccountType: "google",
@@ -91,8 +87,7 @@ func TestStoringDuplicatePaymentLogInMemory(t *testing.T) {
 		Created:     time.Now(),
 		Status:      StatusPending,
 		Currency:    CurrencyUSD,
-		CampaignID:  "campaign-id",
-		GoalID:      "goal-id",
+		ProjectID:   "project-id",
 		UserID:      "user-id",
 		AccountID:   "account-id",
 		AccountType: "google",
@@ -117,8 +112,7 @@ func TestUpdatingPaymentLogInMemory(t *testing.T) {
 		Created:     time.Now(),
 		Status:      StatusPending,
 		Currency:    CurrencyUSD,
-		CampaignID:  "campaign-id",
-		GoalID:      "goal-id",
+		ProjectID:   "project-id",
 		UserID:      "user-id",
 		AccountID:   "account-id",
 		AccountType: "google",
@@ -177,8 +171,7 @@ func TestDeletingPaymentLogInMemory(t *testing.T) {
 		Created:     time.Now(),
 		Status:      StatusPending,
 		Currency:    CurrencyUSD,
-		CampaignID:  "campaign-id",
-		GoalID:      "goal-id",
+		ProjectID:   "project-id",
 		UserID:      "user-id",
 		AccountID:   "account-id",
 		AccountType: "google",
@@ -211,8 +204,7 @@ func TestGettingPaymentInMemory(t *testing.T) {
 		Created:     time.Now(),
 		Status:      StatusPending,
 		Currency:    CurrencyUSD,
-		CampaignID:  "campaign-id",
-		GoalID:      "goal-id",
+		ProjectID:   "project-id",
 		UserID:      "user-id",
 		AccountID:   "account-id",
 		AccountType: "google",
@@ -236,7 +228,7 @@ func TestGettingNonExistentPaymentLogInMemory(t *testing.T) {
 	}
 }
 
-func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
+func TestListingPaymentLogsByProjectInMemory(t *testing.T) {
 	store := NewMemoryStore()
 	logs := []PaymentLog{
 		PaymentLog{
@@ -247,8 +239,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now(),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -260,8 +251,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now().Add(time.Hour),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -273,8 +263,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now().Add(time.Hour * 2),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "other-other-campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "other-other-project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -286,8 +275,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now().Add(time.Hour * 3),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -299,8 +287,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now().Add(time.Hour * 4),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "other-campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "other-project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -312,8 +299,7 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 			Created:     time.Now().Add(time.Hour * 5),
 			Status:      StatusPending,
 			Currency:    CurrencyUSD,
-			CampaignID:  "campaign-id",
-			GoalID:      "goal-id",
+			ProjectID:   "project-id",
 			UserID:      "user-id",
 			AccountID:   "account-id",
 			AccountType: "google",
@@ -321,16 +307,16 @@ func TestListingPaymentLogsByCampaignInMemory(t *testing.T) {
 	}
 	filteredLogs := make([]PaymentLog, 0)
 	for pos, _ := range logs {
-		if logs[pos].CampaignID == "campaign-id" {
+		if logs[pos].ProjectID == "project-id" {
 			filteredLogs = append(filteredLogs, logs[pos])
 		}
 		log := logs[pos]
 		store.paymentLogs[log.ID] = &log
 	}
 	filteredLogs = SortLogsByCreated(filteredLogs)
-	results, err := store.ListPaymentLogsByCampaign("campaign-id", len(logs), 0)
+	results, err := store.ListPaymentLogsByProject("project-id", len(logs), 0)
 	if err != nil {
-		t.Errorf("Error listing payment logs by campaign: %s", err)
+		t.Errorf("Error listing payment logs by project: %s", err)
 	}
 	if len(results) != len(filteredLogs) {
 		t.Logf("Log results: %+v", results)

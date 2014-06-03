@@ -20,8 +20,7 @@ var (
 	MissingCreated     = errors.New("Missing payment log created timestamp.")
 	MissingStatus      = errors.New("Missing payment log status.")
 	MissingCurrency    = errors.New("Missing payment log currency.")
-	MissingCampaignID  = errors.New("Missing payment log campaign ID.")
-	MissingGoalID      = errors.New("Missing payment log goal ID.")
+	MissingProjectID   = errors.New("Missing payment log campaign ID.")
 	MissingUserID      = errors.New("Missing payment log user ID.")
 	MissingAccountType = errors.New("Missing payment log account type.")
 	MissingAccountID   = errors.New("Missing payment log account ID.")
@@ -40,8 +39,7 @@ type PaymentLog struct {
 	Updated     time.Time
 	Status      string
 	Currency    string
-	CampaignID  string
-	GoalID      string
+	ProjectID   string
 	UserID      string
 	AccountID   string
 	AccountType string
@@ -63,10 +61,8 @@ func (p PaymentLog) Validate() error {
 		return MissingStatus
 	case p.Currency == "":
 		return MissingCurrency
-	case p.CampaignID == "":
-		return MissingCampaignID
-	case p.GoalID == "":
-		return MissingGoalID
+	case p.ProjectID == "":
+		return MissingProjectID
 	case p.UserID == "":
 		return MissingUserID
 	case p.AccountType == "":
@@ -102,8 +98,7 @@ type LogStore interface {
 	UpdatePaymentLog(id string, change PaymentLogChange) error
 	DeletePaymentLog(id string) error
 	GetPaymentLog(id string) (PaymentLog, error)
-	ListPaymentLogsByCampaign(campaignID string, num, offset int) ([]PaymentLog, error)
-	ListPaymentLogsByGoal(campaignID, goalID string, num, offset int) ([]PaymentLog, error)
+	ListPaymentLogsByProject(campaignID string, num, offset int) ([]PaymentLog, error)
 	ListPaymentLogsByUser(userID string, num, offset int) ([]PaymentLog, error)
 	ListPaymentLogs(num, offset int) ([]PaymentLog, error)
 

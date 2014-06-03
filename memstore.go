@@ -80,7 +80,7 @@ func (store *MemoryStore) GetPaymentLog(id string) (PaymentLog, error) {
 	}
 }
 
-func (store *MemoryStore) ListPaymentLogsByCampaign(id string, num, offset int) ([]PaymentLog, error) {
+func (store *MemoryStore) ListPaymentLogsByProject(id string, num, offset int) ([]PaymentLog, error) {
 	store.Lock()
 	defer store.Unlock()
 	results := make([]PaymentLog, 0)
@@ -88,7 +88,7 @@ func (store *MemoryStore) ListPaymentLogsByCampaign(id string, num, offset int) 
 		if log == nil {
 			continue
 		}
-		if log.CampaignID == id {
+		if log.ProjectID == id {
 			results = append(results, *log)
 		}
 	}
