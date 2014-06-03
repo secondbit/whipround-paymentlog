@@ -126,3 +126,23 @@ func SortLogsByCreated(logs []PaymentLog) []PaymentLog {
 	sort.Sort(slogs)
 	return []PaymentLog(slogs)
 }
+
+type sortedFailures []FailureLog
+
+func (s sortedFailures) Len() int {
+	return len(s)
+}
+
+func (s sortedFailures) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s sortedFailures) Less(i, j int) bool {
+	return s[i].Timestamp.After(s[j].Timestamp)
+}
+
+func SortFailureLogs(logs []FailureLog) []FailureLog {
+	slogs := sortedFailures(logs)
+	sort.Sort(slogs)
+	return []FailureLog(slogs)
+}

@@ -34,6 +34,11 @@ var (
 )
 ```
 
+## func SortFailureLogs
+``` go
+func SortFailureLogs(logs []FailureLog) []FailureLog
+```
+
 ## func SortLogsByCreated
 ``` go
 func SortLogsByCreated(logs []PaymentLog) []PaymentLog
@@ -120,9 +125,39 @@ func (store *MemoryStore) GetPaymentLog(id string) (PaymentLog, error)
 ```
 
 
+### func (\*MemoryStore) ListFailureLogs
+``` go
+func (store *MemoryStore) ListFailureLogs(num, offset int) ([]FailureLog, error)
+```
+
+
+### func (\*MemoryStore) ListFailureLogsSince
+``` go
+func (store *MemoryStore) ListFailureLogsSince(timestamp time.Time) ([]FailureLog, error)
+```
+
+
+### func (\*MemoryStore) ListPaymentLogs
+``` go
+func (store *MemoryStore) ListPaymentLogs(num, offset int) ([]PaymentLog, error)
+```
+
+
 ### func (\*MemoryStore) ListPaymentLogsByProject
 ``` go
 func (store *MemoryStore) ListPaymentLogsByProject(id string, num, offset int) ([]PaymentLog, error)
+```
+
+
+### func (\*MemoryStore) ListPaymentLogsByUser
+``` go
+func (store *MemoryStore) ListPaymentLogsByUser(id string, num, offset int) ([]PaymentLog, error)
+```
+
+
+### func (\*MemoryStore) StoreFailureLog
+``` go
+func (store *MemoryStore) StoreFailureLog(log FailureLog) error
 ```
 
 

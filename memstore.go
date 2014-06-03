@@ -2,6 +2,7 @@ package paymentlog
 
 import (
 	"sync"
+	"time"
 )
 
 type MemoryStore struct {
@@ -93,4 +94,71 @@ func (store *MemoryStore) ListPaymentLogsByProject(id string, num, offset int) (
 		}
 	}
 	return SortLogsByCreated(results), nil
+}
+
+func (store *MemoryStore) ListPaymentLogsByUser(id string, num, offset int) ([]PaymentLog, error) {
+	store.Lock()
+	defer store.Unlock()
+	results := make([]PaymentLog, 0)
+	for _, log := range store.paymentLogs {
+		if log == nil {
+			continue
+		}
+		if log.UserID == id {
+			results = append(results, *log)
+		}
+	}
+	return SortLogsByCreated(results), nil
+}
+
+func (store *MemoryStore) ListPaymentLogs(num, offset int) ([]PaymentLog, error) {
+	store.Lock()
+	defer store.Unlock()
+	results := make([]PaymentLog, 0)
+	for _, log := range store.paymentLogs {
+		if log == nil {
+			continue
+		}
+		results = append(results, *log)
+	}
+	return SortLogsByCreated(results), nil
+}
+
+func (store *MemoryStore) StoreFailureLog(log FailureLog) error {
+	store.Lock()
+	defer store.Unlock()
+	if _, ok := store.failureLogs[log.ID]; ok {
+		return AlreadyExists
+	}
+	store.failureLogs[log.ID] = &log
+	return nil
+}
+
+func (store *MemoryStore) ListFailureLogs(num, offset int) ([]FailureLog, error) {
+	store.Lock()
+	defer store.Unlock()
+	results := make([]FailureLog, 0)
+	for _, log := range store.failureLogs {
+		if log == nil {
+			continue
+		}
+		results = append(results, *log)
+	}
+	return SortFailureLogs(results), nil
+}
+
+func (store *MemoryStore) ListFailureLogsSince(timestamp time.Time) ([]FailureLog, error) {
+	store.Lock()
+	defer store.Unlock()
+	results := make([]FailureLog, 0)
+	for _, log := range store.failureLogs {
+		if log == nil {
+			continue
+		}
+		if !log.Timestamp.After(timestamp) {
+			continue
+		}
+		results = append(results, *log)
+	}
+	return SortFailureLogs(results), nil
 }

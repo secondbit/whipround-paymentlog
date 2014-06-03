@@ -48,6 +48,25 @@ func comparePaymentLogs(expectation, result PaymentLog) (success bool, field str
 	return true, "", nil, nil
 }
 
+func compareFailureLogs(expectation, result FailureLog) (success bool, field string, expectedValue, resultValue interface{}) {
+	if expectation.ID != result.ID {
+		return false, "id", expectation.ID, result.ID
+	}
+	if expectation.PaymentLogID != result.PaymentLogID {
+		return false, "payment log id", expectation.PaymentLogID, result.PaymentLogID
+	}
+	if expectation.FailureReason != result.FailureReason {
+		return false, "failure reason", expectation.FailureReason, result.FailureReason
+	}
+	if expectation.FailureReasonCode != result.FailureReasonCode {
+		return false, "failure reason code", expectation.FailureReasonCode, result.FailureReasonCode
+	}
+	if !expectation.Timestamp.Equal(result.Timestamp) {
+		return false, "timestamp", expectation.Timestamp, result.Timestamp
+	}
+	return true, "", nil, nil
+}
+
 func TestStoringPaymentLogInMemory(t *testing.T) {
 	store := NewMemoryStore()
 	p := PaymentLog{
@@ -329,4 +348,353 @@ func TestListingPaymentLogsByProjectInMemory(t *testing.T) {
 			t.Errorf("Expected result %d %s to be %+v, got %+v.", pos, field, expectation, result)
 		}
 	}
+}
+
+func TestListingPaymentLogsByUserInMemory(t *testing.T) {
+	store := NewMemoryStore()
+	logs := []PaymentLog{
+		PaymentLog{
+			ID:          "test-payment-log 1",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now(),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 2",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 3",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 2),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "other-other-project-id",
+			UserID:      "other-user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 4",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 3),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "other-user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 5",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 4),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "other-project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 6",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 5),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		},
+	}
+	filteredLogs := make([]PaymentLog, 0)
+	for pos, _ := range logs {
+		if logs[pos].UserID == "user-id" {
+			filteredLogs = append(filteredLogs, logs[pos])
+		}
+		log := logs[pos]
+		store.paymentLogs[log.ID] = &log
+	}
+	filteredLogs = SortLogsByCreated(filteredLogs)
+	results, err := store.ListPaymentLogsByUser("user-id", len(logs), 0)
+	if err != nil {
+		t.Errorf("Error listing payment logs by user: %s", err)
+	}
+	if len(results) != len(filteredLogs) {
+		t.Logf("Log results: %+v", results)
+		t.Logf("Log expectation: %+v", filteredLogs)
+		t.Errorf("Expected %d payment logs, got %d.", len(filteredLogs), len(results))
+	}
+	for pos, _ := range results {
+		success, field, expectation, result := comparePaymentLogs(filteredLogs[pos], results[pos])
+		if !success {
+			t.Errorf("Expected result %d %s to be %+v, got %+v.", pos, field, expectation, result)
+		}
+	}
+}
+
+func TestListingPaymentLogs(t *testing.T) {
+	store := NewMemoryStore()
+	logs := []PaymentLog{
+		PaymentLog{
+			ID:          "test-payment-log 1",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now(),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 2",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "other-user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 3",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 2),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "other-other-project-id",
+			UserID:      "other-user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 4",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 3),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 5",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 4),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "other-project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		}, PaymentLog{
+			ID:          "test-payment-log 6",
+			Amount:      1,
+			Source:      SourceBalanced,
+			SourceID:    "balanced-id",
+			Created:     time.Now().Add(time.Hour * 5),
+			Status:      StatusPending,
+			Currency:    CurrencyUSD,
+			ProjectID:   "project-id",
+			UserID:      "user-id",
+			AccountID:   "account-id",
+			AccountType: "google",
+		},
+	}
+	for pos, _ := range logs {
+		log := logs[pos]
+		store.paymentLogs[log.ID] = &log
+	}
+	logs = SortLogsByCreated(logs)
+	results, err := store.ListPaymentLogs(len(logs), 0)
+	if err != nil {
+		t.Errorf("Error listing payment logs: %s", err)
+	}
+	if len(results) != len(logs) {
+		t.Logf("Log results: %+v", results)
+		t.Logf("Log expectation: %+v", logs)
+		t.Errorf("Expected %d payment logs, got %d.", len(logs), len(results))
+	}
+	for pos, _ := range results {
+		success, field, expectation, result := comparePaymentLogs(logs[pos], results[pos])
+		if !success {
+			t.Errorf("Expected result %d %s to be %+v, got %+v.", pos, field, expectation, result)
+		}
+	}
+}
+
+func TestStoringFailureLogInMemory(t *testing.T) {
+	store := NewMemoryStore()
+	f := FailureLog{
+		ID:                "id",
+		PaymentLogID:      "payment-log",
+		FailureReason:     "you screwed up",
+		FailureReasonCode: "500",
+		Timestamp:         time.Now(),
+	}
+	err := store.StoreFailureLog(f)
+	if err != nil {
+		t.Errorf("Error storing payment log in memory: %s", err)
+	}
+	f2, ok := store.failureLogs[f.ID]
+	if !ok {
+		t.Errorf("FailureLog never got stored in memory: %+v", store.failureLogs)
+	}
+	success, field, expectation, result := compareFailureLogs(f, *f2)
+	if !success {
+		t.Errorf("Mismatch. Expected failure log %s to be %+v, got %+v.", field, expectation, result)
+	}
+}
+
+func TestStoringDuplicateFailureLogInMemory(t *testing.T) {
+	store := NewMemoryStore()
+	f := FailureLog{
+		ID:                "id",
+		PaymentLogID:      "payment-log",
+		FailureReason:     "you screwed up",
+		FailureReasonCode: "500",
+		Timestamp:         time.Now(),
+	}
+	err := store.StoreFailureLog(f)
+	if err != nil {
+		t.Errorf("Error storing payment log in memory: %s", err)
+	}
+	err = store.StoreFailureLog(f)
+	if err != AlreadyExists {
+		t.Errorf("Expected %s when storing failure log in memory, got %v", AlreadyExists, err)
+	}
+}
+
+func TestListingFailureLogs(t *testing.T) {
+	store := NewMemoryStore()
+	logs := []FailureLog{
+		FailureLog{
+			ID:                "id1",
+			PaymentLogID:      "payment-log-1",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now(),
+		},
+		FailureLog{
+			ID:                "id2",
+			PaymentLogID:      "payment-log-2",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now().Add(time.Hour),
+		},
+		FailureLog{
+			ID:                "id3",
+			PaymentLogID:      "payment-log-3",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now().Add(time.Minute),
+		},
+	}
+	for pos, _ := range logs {
+		log := logs[pos]
+		store.failureLogs[log.ID] = &log
+	}
+	logs = SortFailureLogs(logs)
+	results, err := store.ListFailureLogs(len(logs), 0)
+	if err != nil {
+		t.Errorf("Error listing failure logs: %s", err)
+	}
+	if len(results) != len(logs) {
+		t.Logf("Log results: %+v", results)
+		t.Logf("Log expectation: %+v", logs)
+		t.Errorf("Expected %d failure logs, got %d.", len(logs), len(results))
+	}
+	for pos, _ := range results {
+		success, field, expectation, result := compareFailureLogs(logs[pos], results[pos])
+		if !success {
+			t.Errorf("Expected result %d %s to be %+v, got %+v.", pos, field, expectation, result)
+		}
+	}
+}
+
+func TestListingFailureLogsSince(t *testing.T) {
+	store := NewMemoryStore()
+	logs := []FailureLog{
+		FailureLog{
+			ID:                "id1",
+			PaymentLogID:      "payment-log-1",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now(),
+		},
+		FailureLog{
+			ID:                "id2",
+			PaymentLogID:      "payment-log-2",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now().Add(time.Hour),
+		},
+		FailureLog{
+			ID:                "id3",
+			PaymentLogID:      "payment-log-3",
+			FailureReason:     "you-screwed-up",
+			FailureReasonCode: "500",
+			Timestamp:         time.Now().Add(time.Minute),
+		},
+	}
+	now := time.Now().Add(time.Second)
+	filteredLogs := make([]FailureLog, 0)
+	for pos, _ := range logs {
+		if logs[pos].Timestamp.After(now) {
+			filteredLogs = append(filteredLogs, logs[pos])
+		}
+		log := logs[pos]
+		store.failureLogs[log.ID] = &log
+	}
+	filteredLogs = SortFailureLogs(filteredLogs)
+	results, err := store.ListFailureLogsSince(now)
+	if err != nil {
+		t.Errorf("Error listing failure logs: %s", err)
+	}
+	if len(results) != len(filteredLogs) {
+		t.Logf("Log results: %+v", results)
+		t.Logf("Log expectation: %+v", filteredLogs)
+		t.Errorf("Expected %d failure logs, got %d.", len(logs), len(results))
+	}
+	for pos, _ := range results {
+		success, field, expectation, result := compareFailureLogs(filteredLogs[pos], results[pos])
+		if !success {
+			t.Errorf("Expected result %d %s to be %+v, got %+v.", pos, field, expectation, result)
+		}
+	}
+}
+
+func TestMemstoreIsALogStore(t *testing.T) {
+	// this should refuse to compile if MemoryStore doesn't implement LogStore
+	var stores []LogStore
+	stores = append(stores, NewMemoryStore())
 }
